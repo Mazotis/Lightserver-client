@@ -11,16 +11,12 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.CompoundButton;
 import android.os.Handler;
-import android.os.Looper;
 import android.widget.ToggleButton;
 
 import java.io.*;
 import java.net.*;
-import java.lang.Thread;
 import java.util.List;
 import java.util.Arrays;
-import java.util.Timer;
-import java.util.TimerTask;
 import org.json.*;
 
 public class LightSettings extends AppCompatActivity {
@@ -150,14 +146,6 @@ public class LightSettings extends AppCompatActivity {
         }
 
         queuedRequestLock = true;
-    }
-
-    class sendRequest extends TimerTask {
-        @Override
-        public void run() {
-            final sendDataThread lightDataThread = new sendDataThread();
-            lightDataThread.execute();
-        }
     }
 
     private class handshakeThread extends AsyncTask<Void, Void, List> {
