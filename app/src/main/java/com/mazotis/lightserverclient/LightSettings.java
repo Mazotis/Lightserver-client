@@ -12,18 +12,25 @@ import android.widget.TextView;
 import android.widget.CompoundButton;
 import android.os.Handler;
 import android.os.Looper;
+import android.widget.ToggleButton;
 
 import java.io.*;
 import java.net.*;
 import java.lang.Thread;
 import java.util.List;
 import java.util.Arrays;
+import java.util.Timer;
+import java.util.TimerTask;
 import org.json.*;
 
 public class LightSettings extends AppCompatActivity {
 
     List<String> stateList;
+    List<String> requestedState;
+    Handler queuedRequest = new Handler();
+    boolean queuedRequestLock = false;
     boolean connectLock = true;
+    boolean playbulbLinkLock = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,48 +42,71 @@ public class LightSettings extends AppCompatActivity {
                 new handshakeThread().execute();
             }
         });
-        Switch plantPbSwitch = findViewById(R.id.plantPbSwitch);
-        Switch tvPbSwitch = findViewById(R.id.tvPbSwitch);
-        Switch sofaPbSwitch = findViewById(R.id.sofaPbSwitch);
+        final Switch plantPbSwitch = findViewById(R.id.plantPbSwitch);
+        final Switch tvPbSwitch = findViewById(R.id.tvPbSwitch);
+        final Switch sofaPbSwitch = findViewById(R.id.sofaPbSwitch);
         Switch avantMlSwitch = findViewById(R.id.avantMlSwitch);
         Switch arriereMlSwitch = findViewById(R.id.arriereMlSwitch);
+        ToggleButton linkPbBtn = findViewById(R.id.linkPbBtn);
+        linkPbBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (!connectLock) {
+                    if (isChecked) {
+                        playbulbLinkLock = true;
+                        plantPbSwitch.setEnabled(false);
+                        plantPbSwitch.setVisibility(View.INVISIBLE);
+                        tvPbSwitch.setText("Playbulbs");
+                        sofaPbSwitch.setEnabled(false);
+                        sofaPbSwitch.setVisibility(View.INVISIBLE);
+                    } else {
+                        playbulbLinkLock = false;
+                        plantPbSwitch.setEnabled(true);
+                        plantPbSwitch.setVisibility(View.VISIBLE);
+                        sofaPbSwitch.setEnabled(true);
+                        sofaPbSwitch.setVisibility(View.VISIBLE);
+                        tvPbSwitch.setText("Télévision");
+                    }
+                }
+            }
+        });
         plantPbSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (!connectLock) {
-                    final sendDataThread lightDataThread = new sendDataThread();
-                    lightDataThread.setValue("plantPbValue", isChecked ? "1" : "0");
+                    setRequestedValue("plantPbValue", isChecked ? "1" : "0");
                 }
             }
         });
         tvPbSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (!connectLock) {
-                    final sendDataThread lightDataThread = new sendDataThread();
-                    lightDataThread.setValue("tvPbValue", isChecked ? "1" : "0");
+                    if (playbulbLinkLock) {
+                        setRequestedValue("plantPbValue", isChecked ? "1" : "0");
+                        setRequestedValue("tvPbValue", isChecked ? "1" : "0");
+                        setRequestedValue("sofaPbValue", isChecked ? "1" : "0");
+                    } else {
+                        setRequestedValue("tvPbValue", isChecked ? "1" : "0");
+                    }
                 }
             }
         });
         sofaPbSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (!connectLock) {
-                    final sendDataThread lightDataThread = new sendDataThread();
-                    lightDataThread.setValue("sofaPbValue", isChecked ? "1" : "0");
+                    setRequestedValue("sofaPbValue", isChecked ? "1" : "0");
                 }
             }
         });
         avantMlSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (!connectLock) {
-                    final sendDataThread lightDataThread = new sendDataThread();
-                    lightDataThread.setValue("avantMlValue", isChecked ? "1" : "0");
+                    setRequestedValue("avantMlValue", isChecked ? "1" : "0");
                 }
             }
         });
         arriereMlSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (!connectLock) {
-                    final sendDataThread lightDataThread = new sendDataThread();
-                    lightDataThread.setValue("arriereMlValue", isChecked ? "1" : "0");
+                    setRequestedValue("arriereMlValue", isChecked ? "1" : "0");
                 }
             }
         });
@@ -84,16 +114,50 @@ public class LightSettings extends AppCompatActivity {
         new handshakeThread().execute();
     }
 
-    private void timedSwitch() {
-        new java.util.Timer().schedule(
-                new java.util.TimerTask() {
-                    @Override
-                    public void run() {
-                        // your code here
-                    }
-                },
-                5000
-        );
+    protected void setRequestedValue(String lightString, String lightValue) {
+        System.out.println("Setting " + lightString + " to value " + lightValue);
+        switch (lightString) {
+            case "sofaPbValue":
+                requestedState.set(0, lightValue);
+                break;
+            case "tvPbValue":
+                requestedState.set(1, lightValue);
+                break;
+            case "plantPbValue":
+                requestedState.set(2, lightValue);
+                break;
+            case "avantMlValue":
+                requestedState.set(3, lightValue);
+                break;
+            case "arriereMlValue":
+                requestedState.set(4, lightValue);
+                break;
+            default:
+                System.out.println("Light name " + lightString + " does not exist");
+                break;
+        }
+
+        System.out.println("Current state: " + stateList.toString() + ". Requested state: " + requestedState.toString());
+
+        if (queuedRequestLock == false) {
+            queuedRequest.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    final sendDataThread lightDataThread = new sendDataThread();
+                    lightDataThread.execute();
+                }
+            }, 200);
+        }
+
+        queuedRequestLock = true;
+    }
+
+    class sendRequest extends TimerTask {
+        @Override
+        public void run() {
+            final sendDataThread lightDataThread = new sendDataThread();
+            lightDataThread.execute();
+        }
     }
 
     private class handshakeThread extends AsyncTask<Void, Void, List> {
@@ -119,6 +183,7 @@ public class LightSettings extends AppCompatActivity {
                 BufferedReader sockRead = new BufferedReader(new InputStreamReader(soc.getInputStream()));
                 String lState = sockRead.readLine();
                 stateList = Arrays.asList(lState.substring(1,lState.length()-1).split("\\s*,\\s*"));
+                requestedState = stateList;
                 sockRead.close();
                 soc.close();
             } catch (Exception e) {
@@ -143,25 +208,23 @@ public class LightSettings extends AppCompatActivity {
                 bulbsScrollView.setVisibility(View.VISIBLE);
 
                 //Switches
-                System.out.println("Comparing result.get: " + result.get(0) + " with '0'");
-                if (!result.get(0).toString().equals(0)) {
-                    System.out.println("is on");
+                if (!result.get(0).toString().equals('0')) {
                     Switch sofaPbSwitch = findViewById(R.id.sofaPbSwitch);
                     sofaPbSwitch.setChecked(true);
                 }
-                if (!result.get(1).toString().equals(0)) {
+                if (!result.get(1).toString().equals('0')) {
                     Switch tvPbSwitch = findViewById(R.id.tvPbSwitch);
                     tvPbSwitch.setChecked(true);
                 }
-                if (!result.get(2).toString().equals(0)) {
+                if (!result.get(2).toString().equals('0')) {
                     Switch plantPbSwitch = findViewById(R.id.plantPbSwitch);
                     plantPbSwitch.setChecked(true);
                 }
-                if (!result.get(3).toString().equals(0)) {
+                if (!result.get(3).toString().equals('0')) {
                     Switch avantMlSwitch = findViewById(R.id.avantMlSwitch);
                     avantMlSwitch.setChecked(true);
                 }
-                if (!result.get(4).toString().equals(0)) {
+                if (!result.get(4).toString().equals('0')) {
                     Switch arriereMlSwitch = findViewById(R.id.arriereMlSwitch);
                     arriereMlSwitch.setChecked(true);
                 }
@@ -188,46 +251,10 @@ public class LightSettings extends AppCompatActivity {
         Switch sofaPbSwitch = findViewById(R.id.sofaPbSwitch);
         Switch avantMlSwitch = findViewById(R.id.avantMlSwitch);
         Switch arriereMlSwitch = findViewById(R.id.arriereMlSwitch);
-        String sofaPbValue = stateList.get(0);
-        String tvPbValue = stateList.get(1);
-        String plantPbValue = stateList.get(2);
-        String avantMlValue = stateList.get(3);
-        String arriereMlValue = stateList.get(4);
-
-        public void setValue(String lightString, String lightValue) {
-            System.out.println("Setting " + lightString + " to value " + lightValue);
-            switch (lightString) {
-                case "sofaPbValue":
-                    sofaPbValue = lightValue;
-                    stateList.set(0, lightValue);
-                    break;
-                case "tvPbValue":
-                    tvPbValue = lightValue;
-                    stateList.set(1, lightValue);
-                    break;
-                case "plantPbValue":
-                    plantPbValue = lightValue;
-                    stateList.set(2, lightValue);
-                    break;
-                case "avantMlValue":
-                    avantMlValue = lightValue;
-                    stateList.set(3, lightValue);
-                    break;
-                case "arriereMlValue":
-                    arriereMlValue = lightValue;
-                    stateList.set(4, lightValue);
-                    break;
-                default:
-                    System.out.println("Light name " + lightString + " does not exist");
-                    break;
-            }
-
-            System.out.println("Current state: [" + sofaPbValue + "," + tvPbValue + "," + plantPbValue + "," + avantMlValue + "," + arriereMlValue + "]");
-            this.execute();
-        }
 
         @Override
         protected void onPreExecute() {
+            connectLock = true;
             plantPbSwitch.setEnabled(false);
             tvPbSwitch.setEnabled(false);
             sofaPbSwitch.setEnabled(false);
@@ -242,8 +269,8 @@ public class LightSettings extends AppCompatActivity {
                 Socket soc = new Socket("192.168.1.50", 1111);
                 PrintWriter sockWrite = new PrintWriter(soc.getOutputStream(), true);
                 JSONObject JSONreq = new JSONObject();
-                JSONreq.put("playbulb", sofaPbValue + ',' + tvPbValue + ',' + plantPbValue);
-                JSONreq.put("milight", avantMlValue + ',' + arriereMlValue);
+                JSONreq.put("playbulb", requestedState.get(0) + ',' + requestedState.get(1) + ',' + requestedState.get(2));
+                JSONreq.put("milight", requestedState.get(3) + ',' + requestedState.get(4));
                 sockWrite.print(JSONreq);
                 sockWrite.flush();
                 sockWrite.close();
@@ -257,6 +284,8 @@ public class LightSettings extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void v) {
+            connectLock = false;
+            queuedRequestLock = false;
             plantPbSwitch.setEnabled(true);
             tvPbSwitch.setEnabled(true);
             sofaPbSwitch.setEnabled(true);

@@ -26,11 +26,12 @@
                     android:id="@+id/connectBtn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
                     android:text="Connecter"
                     android:visibility="invisible"
                     app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    tools:layout_editor_absoluteX="16dp" />
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
                     android:id="@+id/connectText"
@@ -89,14 +90,32 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
-                    <TextView
-                        android:id="@+id/playbulbLbl"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="PlayBulbs"
-                        android:textAppearance="@android:style/TextAppearance.Material.Display2"
-                        tools:layout_editor_absoluteX="16dp"
-                        tools:layout_editor_absoluteY="106dp" />
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/playbulbLbl"
+                            android:layout_width="285dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:baselineAligned="false"
+                            android:text="PlayBulbs"
+                            android:textAppearance="@android:style/TextAppearance.Material.Display2"
+                            tools:layout_editor_absoluteX="16dp"
+                            tools:layout_editor_absoluteY="106dp" />
+
+                        <ToggleButton
+                            android:id="@+id/linkPbBtn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:baselineAligned="false"
+                            android:text="Lier"
+                            android:textOff="Lier ?"
+                            android:textOn="Liés" />
+                    </LinearLayout>
 
                     <Switch
                         android:id="@+id/plantPbSwitch"
@@ -150,6 +169,7 @@
                         android:checked="false"
                         android:text="Arrière"
                         android:textAppearance="@android:style/TextAppearance.Material.Display1" />
+
                 </LinearLayout>
             </ScrollView>
 
