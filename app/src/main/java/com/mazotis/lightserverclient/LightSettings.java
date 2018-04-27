@@ -143,23 +143,25 @@ public class LightSettings extends AppCompatActivity {
                 bulbsScrollView.setVisibility(View.VISIBLE);
 
                 //Switches
-                if (!result.get(0).equals('0')) {
-                    Switch plantPbSwitch = findViewById(R.id.plantPbSwitch);
-                    plantPbSwitch.setChecked(true);
-                }
-                if (!result.get(1).equals('0')) {
-                    Switch tvPbSwitch = findViewById(R.id.tvPbSwitch);
-                    tvPbSwitch.setChecked(true);
-                }
-                if (!result.get(2).equals('0')) {
+                System.out.println("Comparing result.get: " + result.get(0) + " with '0'");
+                if (result.get(0).toString().equals("0")) {
+                    System.out.println("is on");
                     Switch sofaPbSwitch = findViewById(R.id.sofaPbSwitch);
                     sofaPbSwitch.setChecked(true);
                 }
-                if (!result.get(3).equals('0')) {
+                if (!result.get(1).toString().equals(0)) {
+                    Switch tvPbSwitch = findViewById(R.id.tvPbSwitch);
+                    tvPbSwitch.setChecked(true);
+                }
+                if (!result.get(2).toString().equals(0)) {
+                    Switch plantPbSwitch = findViewById(R.id.plantPbSwitch);
+                    plantPbSwitch.setChecked(true);
+                }
+                if (!result.get(3).toString().equals(0)) {
                     Switch avantMlSwitch = findViewById(R.id.avantMlSwitch);
                     avantMlSwitch.setChecked(true);
                 }
-                if (!result.get(4).equals('0')) {
+                if (!result.get(4).toString().equals(0)) {
                     Switch arriereMlSwitch = findViewById(R.id.arriereMlSwitch);
                     arriereMlSwitch.setChecked(true);
                 }
@@ -186,36 +188,41 @@ public class LightSettings extends AppCompatActivity {
         Switch sofaPbSwitch = findViewById(R.id.sofaPbSwitch);
         Switch avantMlSwitch = findViewById(R.id.avantMlSwitch);
         Switch arriereMlSwitch = findViewById(R.id.arriereMlSwitch);
-        String plantPbValue = stateList.get(0);
+        String sofaPbValue = stateList.get(0);
         String tvPbValue = stateList.get(1);
-        String sofaPbValue = stateList.get(2);
+        String plantPbValue = stateList.get(2);
         String avantMlValue = stateList.get(3);
         String arriereMlValue = stateList.get(4);
 
         public void setValue(String lightString, String lightValue) {
             System.out.println("Setting " + lightString + " to value " + lightValue);
-            System.out.println("Current state: " + stateList.toString());
             switch (lightString) {
-                case "plantPbValue":
-                    plantPbValue = lightValue;
+                case "sofaPbValue":
+                    sofaPbValue = lightValue;
+                    stateList.set(0, lightValue);
                     break;
                 case "tvPbValue":
                     tvPbValue = lightValue;
+                    stateList.set(1, lightValue);
                     break;
-                case "sofaPbValue":
-                    sofaPbValue = lightValue;
+                case "plantPbValue":
+                    plantPbValue = lightValue;
+                    stateList.set(2, lightValue);
                     break;
                 case "avantMlValue":
                     avantMlValue = lightValue;
+                    stateList.set(3, lightValue);
                     break;
                 case "arriereMlValue":
                     arriereMlValue = lightValue;
+                    stateList.set(4, lightValue);
                     break;
                 default:
                     System.out.println("Light name " + lightString + " does not exist");
                     break;
             }
 
+            System.out.println("Current state: [" + sofaPbValue + "," + tvPbValue + "," + plantPbValue + "," + avantMlValue + "," + arriereMlValue + "]");
             this.execute();
         }
 
@@ -235,15 +242,14 @@ public class LightSettings extends AppCompatActivity {
                 Socket soc = new Socket("192.168.1.50", 1111);
                 PrintWriter sockWrite = new PrintWriter(soc.getOutputStream(), true);
                 JSONObject JSONreq = new JSONObject();
-                JSONreq.put("playbulb", plantPbValue + "," + tvPbValue + "," + sofaPbValue);
-                JSONreq.put("milight", avantMlValue + "," + arriereMlValue);
+                JSONreq.put("playbulb", sofaPbValue + ',' + tvPbValue + ',' + plantPbValue);
+                JSONreq.put("milight", avantMlValue + ',' + arriereMlValue);
                 sockWrite.print(JSONreq);
                 sockWrite.flush();
                 sockWrite.close();
                 soc.close();
             } catch (Exception e) {
                 System.out.println("Error in query");
-
             }
 
             return null;
