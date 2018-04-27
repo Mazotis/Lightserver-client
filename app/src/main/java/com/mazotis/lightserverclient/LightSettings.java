@@ -144,7 +144,7 @@ public class LightSettings extends AppCompatActivity {
 
                 //Switches
                 System.out.println("Comparing result.get: " + result.get(0) + " with '0'");
-                if (result.get(0).toString().equals("0")) {
+                if (!result.get(0).toString().equals(0)) {
                     System.out.println("is on");
                     Switch sofaPbSwitch = findViewById(R.id.sofaPbSwitch);
                     sofaPbSwitch.setChecked(true);
