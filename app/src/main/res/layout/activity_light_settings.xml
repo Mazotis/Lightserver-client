@@ -115,31 +115,75 @@
                             android:text="Lier"
                             android:textOff="Lier ?"
                             android:textOn="Liés" />
+
                     </LinearLayout>
 
-                    <Switch
-                        android:id="@+id/plantPbSwitch"
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:checked="false"
-                        android:text="Plante"
-                        android:textAppearance="@android:style/TextAppearance.Material.Display1" />
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:orientation="horizontal">
 
-                    <Switch
-                        android:id="@+id/tvPbSwitch"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:checked="false"
-                        android:text="Télévision"
-                        android:textAppearance="@android:style/TextAppearance.Material.Display1" />
+                        <Switch
+                            android:id="@+id/plantPbSwitch"
+                            android:layout_width="290dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:checked="false"
+                            android:text="Plante"
+                            android:textAppearance="@android:style/TextAppearance.Material.Display1" />
 
-                    <Switch
-                        android:id="@+id/sofaPbSwitch"
+                        <Button
+                            android:id="@+id/plantColorBtn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:text="Couleur" />
+                    </LinearLayout>
+
+                    <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:checked="false"
-                        android:text="Sofa"
-                        android:textAppearance="@android:style/TextAppearance.Material.Display1" />
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <Switch
+                            android:id="@+id/tvPbSwitch"
+                            android:layout_width="290dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:checked="false"
+                            android:text="Télévision"
+                            android:textAppearance="@android:style/TextAppearance.Material.Display1" />
+
+                        <Button
+                            android:id="@+id/tvColorBtn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:text="Couleur" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal">
+
+                        <Switch
+                            android:id="@+id/sofaPbSwitch"
+                            android:layout_width="290dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:checked="false"
+                            android:text="Sofa"
+                            android:textAppearance="@android:style/TextAppearance.Material.Display1" />
+
+                        <Button
+                            android:id="@+id/sofaColorBtn"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:text="Couleur" />
+                    </LinearLayout>
 
                     <android.support.constraint.Guideline
                         android:id="@+id/guideline"

@@ -1,5 +1,7 @@
 package com.mazotis.lightserverclient;
 
+import android.content.DialogInterface;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -12,6 +14,10 @@ import android.widget.TextView;
 import android.widget.CompoundButton;
 import android.os.Handler;
 import android.widget.ToggleButton;
+
+import com.flask.colorpicker.ColorPickerView;
+import com.flask.colorpicker.OnColorSelectedListener;
+import com.flask.colorpicker.builder.*;
 
 import java.io.*;
 import java.net.*;
@@ -44,6 +50,27 @@ public class LightSettings extends AppCompatActivity {
         Switch avantMlSwitch = findViewById(R.id.avantMlSwitch);
         Switch arriereMlSwitch = findViewById(R.id.arriereMlSwitch);
         ToggleButton linkPbBtn = findViewById(R.id.linkPbBtn);
+        final Button plantColorBtn = findViewById(R.id.plantColorBtn);
+        final Button tvColorBtn = findViewById(R.id.tvColorBtn);
+        final Button sofaColorBtn = findViewById(R.id.sofaColorBtn);
+
+        plantColorBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                colorPickerSpawn("plantPbValue", plantColorBtn);
+            }
+        });
+        tvColorBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                colorPickerSpawn("tvPbValue", tvColorBtn);
+            }
+        });
+        sofaColorBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                colorPickerSpawn("sofaPbValue", sofaColorBtn);
+            }
+        });
+
+
         linkPbBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (!connectLock) {
@@ -51,15 +78,23 @@ public class LightSettings extends AppCompatActivity {
                         playbulbLinkLock = true;
                         plantPbSwitch.setEnabled(false);
                         plantPbSwitch.setVisibility(View.INVISIBLE);
-                        tvPbSwitch.setText("Playbulbs");
                         sofaPbSwitch.setEnabled(false);
                         sofaPbSwitch.setVisibility(View.INVISIBLE);
+                        plantColorBtn.setEnabled(false);
+                        plantColorBtn.setVisibility(View.INVISIBLE);
+                        sofaColorBtn.setEnabled(false);
+                        sofaColorBtn.setVisibility(View.INVISIBLE);
+                        tvPbSwitch.setText("Playbulbs");
                     } else {
                         playbulbLinkLock = false;
                         plantPbSwitch.setEnabled(true);
                         plantPbSwitch.setVisibility(View.VISIBLE);
                         sofaPbSwitch.setEnabled(true);
                         sofaPbSwitch.setVisibility(View.VISIBLE);
+                        plantColorBtn.setEnabled(true);
+                        plantColorBtn.setVisibility(View.VISIBLE);
+                        sofaColorBtn.setEnabled(true);
+                        sofaColorBtn.setVisibility(View.VISIBLE);
                         tvPbSwitch.setText("Télévision");
                     }
                 }
@@ -110,6 +145,35 @@ public class LightSettings extends AppCompatActivity {
         new handshakeThread().execute();
     }
 
+    protected void colorPickerSpawn(final String lightString, final Button colorBtn) {
+        ColorPickerDialogBuilder
+                .with(LightSettings.this)
+                .setTitle("Choose color")
+                .initialColor(Color.WHITE)
+                .wheelType(ColorPickerView.WHEEL_TYPE.FLOWER)
+                .density(12)
+                .setOnColorSelectedListener(new OnColorSelectedListener() {
+                    @Override
+                    public void onColorSelected(int selectedColor) {
+                        if (playbulbLinkLock){
+                            setRequestedValue("plantPbValue", "00"+Integer.toHexString(selectedColor).substring(2));
+                            setRequestedValue("tvPbValue", "00"+Integer.toHexString(selectedColor).substring(2));
+                            setRequestedValue("sofaPbValue", "00"+Integer.toHexString(selectedColor).substring(2));
+                        } else {
+                            setRequestedValue(lightString, "00"+Integer.toHexString(selectedColor).substring(2));
+                        }
+                        colorBtn.setBackgroundColor(selectedColor);
+                    }
+                })
+                .setNegativeButton("Fermer", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                })
+                .build()
+                .show();
+    }
+
     protected void setRequestedValue(String lightString, String lightValue) {
         System.out.println("Setting " + lightString + " to value " + lightValue);
         switch (lightString) {
@@ -142,7 +206,7 @@ public class LightSettings extends AppCompatActivity {
                     final sendDataThread lightDataThread = new sendDataThread();
                     lightDataThread.execute();
                 }
-            }, 200);
+            }, 100);
         }
 
         queuedRequestLock = true;
