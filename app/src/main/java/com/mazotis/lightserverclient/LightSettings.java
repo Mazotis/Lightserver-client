@@ -180,6 +180,9 @@ public class LightSettings extends AppCompatActivity {
         protected List doInBackground(Void ... voids) {
             try {
                 Socket soc = new Socket("192.168.1.50", 1111);
+                PrintWriter sockWrite = new PrintWriter(soc.getOutputStream(), true);
+                sockWrite.print("getstate");
+                sockWrite.flush();
                 BufferedReader sockRead = new BufferedReader(new InputStreamReader(soc.getInputStream()));
                 String lState = sockRead.readLine();
                 stateList = Arrays.asList(lState.substring(1,lState.length()-1).split("\\s*,\\s*"));
@@ -187,6 +190,7 @@ public class LightSettings extends AppCompatActivity {
                 sockRead.close();
                 soc.close();
             } catch (Exception e) {
+                System.out.println(e);
                 stateList = null;
             }
 
